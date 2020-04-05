@@ -2,14 +2,13 @@ module Collisions where
 
 import Tools
 import Data.List (sortBy, groupBy)
-import Debug
 
 linearCol :: [(Object, Vector)] -> (Object, Vector) -> (Object, Vector)
 linearCol all o@((m, (x, y)), v@(dx, dy)) =
   if null candidates then o else
     ((m, (colX, colY)), (0, 0))
   where
-    candidates = dbgVal $ filter cf all
+    candidates = filter cf all
     cf ((_, (cx, cy)), (cdx, cdy)) =
       cdx == 0 && cdy == 0 &&
       (cx /= x || cy /= y) &&
@@ -20,6 +19,7 @@ linearCol all o@((m, (x, y)), v@(dx, dy)) =
     cs ((_, v1), _) ((_, v2), _) = compare (distance v v2) (distance v v1)
     ((_, (colX, colY)), _) = head $ sortBy cs candidates
 
+inRange :: Int -> Int -> Bool
 inRange _   0   = True
 inRange max val = signum max == signum val && abs max >= abs val
 

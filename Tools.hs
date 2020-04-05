@@ -5,6 +5,7 @@ type Vector = (Int, Int)
 --             Mass  Position
 type Object = (Int,  Vector)
 
+forceMap :: [(Int, [Int])]
 forceMap = map (\a -> (a, forces a)) [1..]
 
 vmerge :: (Int -> Int -> Int) -> Vector -> Vector -> Vector

@@ -1,1 +1,1 @@
-/home/leonsch/haskell/Debug.hs
+../Debug.hs
