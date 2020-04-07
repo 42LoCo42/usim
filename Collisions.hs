@@ -1,7 +1,7 @@
 module Collisions where
 
 import Tools
-import Data.List (sortBy, groupBy)
+import Data.List (groupBy, sortBy, sortOn)
 
 linearCol :: [(Object, Vector)] -> (Object, Vector) -> (Object, Vector)
 linearCol all o@((m, (x, y)), v@(dx, dy)) =
@@ -10,12 +10,17 @@ linearCol all o@((m, (x, y)), v@(dx, dy)) =
   where
     candidates = filter cf all
     cf ((_, (cx, cy)), (cdx, cdy)) =
-      cdx == 0 && cdy == 0 &&
-      (cx /= x || cy /= y) &&
-      inRange dx (x + dx - cx) &&
-      inRange dy (y + dy - cy) &&
-      if abs (x-dx) == abs (y-dy) then
-        abs (x-cx) == abs (y-cy) else True
+      cdx == 0 && cdy == 0 &&     -- doesn't move
+      (cx /= x || cy /= y) &&     -- is not us
+      inRange dx (x + dx - cx) && -- x range
+      inRange dy (y + dy - cy) && -- y range
+      if abs dx == abs dy then    -- if we move diagonal
+        tx >= 0 && ty >= 0 && tx == ty -- transformed diffs match our direction and are equal
+      else True
+      where
+        tx = (cx-x)*signum dx
+        ty = (cy-y)*signum dy
+
     cs ((_, v1), _) ((_, v2), _) = compare (distance v v2) (distance v v1)
     ((_, (colX, colY)), _) = head $ sortBy cs candidates
 
@@ -26,14 +31,5 @@ inRange max val = signum max == signum val && abs max >= abs val
 staticCol :: [Object] -> [Object]
 staticCol =
   map (
-    foldr (\(m1, (x, y)) -> \(m2, _) -> (m1+m2, (x, y))) (0, (0, 0))
-  ) . groupBy (vPred vecEq) . sortBy (vPred vecCm)
-  where
-    vecEq (x1, y1) (x2, y2) = x1 == x2 && y1 == y2
-    vecCm (x1, y1) (x2, y2)
-      | x1 < x2   = LT
-      | x1 > x2   = GT
-      | y1 < y2   = LT
-      | y1 > y2   = GT
-      | otherwise = EQ
-    vPred op = \(_, v1) -> \(_, v2) -> op v1 v2
+    foldr1 (\(m1, (x, y)) -> \(m2, _) -> (m1+m2, (x, y)))
+  ) . groupBy (\(_, p1) -> \(_, p2) -> p1 == p2) . sortOn snd

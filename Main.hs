@@ -4,13 +4,12 @@ import Movement
 import Collisions
 import Tools
 import Modulus
-import Debug
 
 uCycle :: Int -> [Object] -> [Object]
 uCycle t objs =
-  map (modulObj max min) $ staticCol $ finishMove $ linCols
+  staticCol $ map (modulObj max min) $ finishMove $ linCols
   where
-    linCols = dbgVal $ map (linearCol withVec) withVec
+    linCols = map (linearCol withVec) withVec
     withVec = zip objs $ moveAll objs
     max     = t-1
     min     = -t
