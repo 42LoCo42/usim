@@ -18,7 +18,7 @@ build-type:          Simple
 
 executable usim
   main-is:             Main.hs
-  other-modules:       Collisions, Debug, Modulus, Movement, Tools
+  other-modules:       Collisions, Debug, Modulus, Movement, Tools, Initial
   -- other-extensions:
   build-depends:       base >=4.13 && <4.14,
                        gloss

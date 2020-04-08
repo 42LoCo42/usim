@@ -4,11 +4,11 @@ import Movement
 import Collisions
 import Tools
 import Modulus
+import Initial
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Environment (getScreenSize)
 
-import Debug
 
 type Model = ([Object], Int)
 
@@ -25,16 +25,8 @@ uCycle t objs =
     min     = -t
 
 main = do
-  let launch = [
-        (1, (-2, -2)),
-        (3, (-3, -3)),
-        (3, (2, 2)),
-        (1, (1, -2)),
-        (3, (2, -3)),
-        (3, (-3, 2))
-        ]
-      time = 3
-      model = (launch, time)
+  let time = 6
+      model = (initial, time)
   screenSize <- getScreenSize
   simulate
     FullScreen
@@ -48,12 +40,12 @@ grid :: Int -> Float -> Float -> Picture
 grid cels width height = pictures $ hori ++ vert
   where
     coords a = take (cels-1) $ map (*(a/cels')) [1..]
-    hori   = map (\y -> translate (width/2) y $ color white $ rectangleSolid width 5) $ coords height
-    vert   = map (\x -> translate x (height/2) $ color white $ rectangleSolid 5 height) $ coords width
+    hori   = map (\y -> translate (width/2) y $ color white $ rectangleSolid width 2) $ coords height
+    vert   = map (\x -> translate x (height/2) $ color white $ rectangleSolid 2 height) $ coords width
     cels'  = itof cels
 
 render :: (Int, Int) -> Model -> Picture
-render screenSize@(width, height) (objs, time) = pictures [gridPic, dots]
+render screenSize@(width, height) (objs, time) = pictures [gridPic, dots, texts]
   where
     -- General data
     width'  = itof width
@@ -65,5 +57,7 @@ render screenSize@(width, height) (objs, time) = pictures [gridPic, dots]
     gridPic = translate (-width'/2) (-height'/2) $ grid (time*2) width' height'
     dots    = pictures $ map dot objs
     dot (m, (x, y)) = translate (snap x dtx) (snap y dty) $ color white $ circle (itof m * 10)
+    texts   = pictures $ map text objs
+    text (m, (x, y)) = translate (snap x dtx) (snap y dty) $ color white $ Graphics.Gloss.text $ show m
     -- Helpers
     snap c dtc = (itof c + 0.5) * dtc
