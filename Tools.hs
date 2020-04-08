@@ -1,5 +1,9 @@
 module Tools where
 
+import System.Random
+
+type Model = ([Object], Int, StdGen)
+
 --             X    Y
 type Vector = (Int, Int)
 --             Mass  Position
@@ -35,3 +39,17 @@ distance :: Vector -> Vector -> Int
 distance v1 v2 = max x y
   where
     (x, y) = vmap abs $ v1 `vsub` v2
+
+distinctRandoms :: (Random a, Integral a, RandomGen g) => a -> Int -> g -> [a]
+distinctRandoms max count gen
+  | count > fromEnum max = []
+  | otherwise =
+    helper count [] ((`mod` max) . abs <$> randoms gen)
+  where
+    helper count have (new:rans)
+      | length have == count = have
+      | otherwise            =
+        if elem new have then
+          helper count have rans
+        else
+          helper count (new:have) rans

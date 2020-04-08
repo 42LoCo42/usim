@@ -29,13 +29,17 @@ affect (m1, v1@(x1, y1)) (m2, v2@(x2, y2)) =
 --      Mass   Force
 slow :: Int -> Int -> Vector -> Vector
 slow 1    _     v       = v
-slow mass force (x,y)   = (trunc x x', trunc y y')
+slow mass force (x,y)   = (trunc x x'', trunc y y'')
   where
     x'         = apply x
     y'         = apply y
+    x''        = interfere y y' x'
+    y''        = interfere x x' y'
     amount     = force - mass - 1
     apply a    = if amount > 0 then a else a + signum a * amount
-    trunc a a' = if no_swap_slow && signum a /= signum a' then 0 else a'
+    interfere a a' b' = if signdiff a a' then b' + (if signdiff a' b' then 1 else -1) * a' else b'
+    trunc a a' = if no_swap_slow && signdiff a a' then 0 else a'
+    signdiff a a' = signum a /= signum a'
 
 finishMove :: [(Object, Vector)] -> [Object]
 finishMove = map (\((m, v1), v2) -> (m, v1 `vadd` v2))
