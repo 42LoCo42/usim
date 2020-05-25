@@ -18,9 +18,8 @@ build-type:          Simple
 
 executable usim
   main-is:             Main.hs
-  other-modules:       Collisions, Debug, Modulus, Movement, Tools, Initial, Render, Update
+  other-modules:       Collisions, Modulus, Movement, Tools, Initial, Render, Update
   -- other-extensions:
-  build-depends:       base >=4.13 && <4.14,
-                       gloss, random
+  build-depends:       base >=4.13 && <4.14, gloss, random
   -- hs-source-dirs:
   default-language:    Haskell2010

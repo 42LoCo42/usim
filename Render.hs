@@ -16,7 +16,7 @@ grid cels width height = pictures $ hori ++ vert
     cels'  = itof cels
 
 render :: (Int, Int) -> Model -> Picture
-render screenSize@(width, height) (objs, time, _) = pictures [gridPic, dotPic, textPic, origin]
+render (width, height) (objs, time, _) = pictures [gridPic, dotPic, textPic, origin]
   where
     -- General data
     width'  = itof width
@@ -34,4 +34,3 @@ render screenSize@(width, height) (objs, time, _) = pictures [gridPic, dotPic, t
     origin = translate (snap 0 dtx) (snap 0 dty) $ color red $ circle 20
     -- Helpers
     snap c dtc = (itof c + 0.5) * dtc
-

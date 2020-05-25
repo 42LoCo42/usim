@@ -1,14 +1,15 @@
 module Main where
 
-import Initial
-import Render
-import Update
-import Tools
-
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Environment (getScreenSize)
+import Graphics.Gloss.Interface.IO.Interact
+import Initial
+import Render
 import System.Random (getStdGen)
+import Tools
+import Update
 
+main :: IO ()
 main = do
   screenSize <- getScreenSize
   gen <- getStdGen
@@ -20,7 +21,7 @@ main = do
     1
     model
     (render screenSize)
-    (\_ -> \_ -> update)
+    (\_ _ -> update)
 
 disp :: Model -> IO ()
 disp model = display FullScreen black (render (800, 800) model)
