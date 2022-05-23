@@ -1,16 +1,21 @@
 -- vim: shiftwidth=2:expandtab
 {-# LANGUAGE TupleSections #-}
 module Universe
-  ( Vector (..)
+  {-  ( Vector (..)
   , Universe (..)
   , nextTimeStep
+  , movements
   , collisions
   , movePoints
-  ) where
+  )-}
+    where
 
+import           Data.Bifunctor  (second)
 import qualified Data.Map.Strict as M
+import           Debug.Trace     (trace)
+import           GHC.Stack       (HasCallStack)
 
-import Utils
+import           Utils
 
 data Vector = Vector
   { getX :: Int
@@ -22,12 +27,18 @@ instance Show Vector where
   show (Vector x y) = "(" <> show x <> " " <> show y <> ")"
 
 instance Num Vector where
-  (+) (Vector x1 y1) (Vector x2 y2) = Vector (x1 + x2) (y1 + y2)
-  (*)         = undefined
-  abs         = undefined
-  fromInteger = undefined
-  negate      = undefined
-  signum      = undefined
+  (Vector x1 y1) + (Vector x2 y2) = Vector (x1 + x2) (y1 + y2)
+  (Vector x1 y1) * (Vector x2 y2) = Vector (x1 * x2) (y1 * y2)
+  abs (Vector x y)                = Vector (abs x) (abs y)
+  signum _                        = 1
+  fromInteger _                   = Vector 0 0
+  negate (Vector x y)             = Vector (-x) (-y)
+
+vplus :: Vector -> Vector -> Vector
+vplus (Vector x1 y1) (Vector x2 y2) = Vector (x1 + x2) (y1 + y2)
+
+vsum :: [Vector] -> Vector
+vsum = foldl1 vplus
 
 data Universe = Universe
   { step   :: Int
@@ -43,9 +54,47 @@ canCollide (Vector x y) = abs x == abs y
 offsetGen :: Vector -> [Vector]
 offsetGen (Vector x y) = zipWith Vector (to x) (to y)
 
--- TODO cache largest mass?
-movements :: M.Map Vector Int -> M.Map Vector (Int, Vector)
-movements = undefined
+fieldStrengths :: Int -> [Int]
+fieldStrengths mass = mass : map helper (fieldStrengths mass)
+  where
+    helper 0 = 0
+    helper 1 = 0
+    helper m = c m % sqrt % round
+
+fieldRadius :: Int -> Int
+fieldRadius = length . takeWhile (/= 0) . fieldStrengths
+
+distance :: Vector -> Vector -> Int
+distance (Vector x1 y1) (Vector x2 y2) = max
+  (x1 - x2 % abs) (y1 - y2 % abs)
+
+onMainAxes :: Vector -> Bool
+onMainAxes (Vector x y) = 0 `elem` [x, y]
+
+onDiagonals :: Vector -> Bool
+onDiagonals (Vector x y) = abs x == abs y
+
+fieldTrace :: [(Vector, [Int])] -> [(Vector, [Int])]
+fieldTrace fields = trace (map (second (take 10)) fields % pr) fields
+
+movements :: HasCallStack => M.Map Vector Int -> M.Map Vector (Int, Vector)
+movements masses = M.mapWithKey moveOne masses
+  where
+    fields :: HasCallStack => [(Vector, [Int])]
+    fields = M.toList masses % map (second fieldStrengths)
+
+    moveOne :: HasCallStack => Vector -> Int -> (Int, Vector)
+    moveOne this mass = (mass, map (affect this) fields % sum)
+
+    affect :: HasCallStack => Vector -> (Vector, [Int]) -> Vector
+    affect affected (affector, field)
+      | affected     == affector     = Vector 0 0
+      | strengthHere == 0            = Vector 0 0
+      | onMainAxes relative          = Vector 1 1
+      | otherwise                    = Vector 1 1
+      where
+        strengthHere = field !! (distance affected affector - 1)
+        relative     = affected - affector
 
 collisions :: M.Map Vector (Int, Vector) -> M.Map Vector (Int, Vector)
 collisions m = M.mapWithKey helper m

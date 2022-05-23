@@ -7,8 +7,8 @@ import qualified Data.Map.Strict as M
 import           Data.Text       (Text, pack)
 import           Foreign.C       (CInt)
 import qualified Linear          as L
-import qualified SDL
 import           SDL             (($=))
+import qualified SDL
 import qualified SDL.Font
 
 import Universe
@@ -24,6 +24,14 @@ test = M.fromList
   , (Vector 5 0, (5, Vector 0 0))
   , (Vector 2 0, (2, Vector 0 0))
   , (Vector 2 1, (9, Vector 1 1))
+  ]
+
+mtest :: M.Map Vector Int
+mtest = M.fromList
+  [ (Vector 0 0, 1)
+  , (Vector 0 2, 1)
+  , (Vector 0 4, 1)
+  , (Vector 1 1, 1)
   ]
 
 rotate :: SDL.V2 CInt -> Double -> SDL.V2 CInt -> SDL.V2 CInt
